@@ -1,44 +1,54 @@
-const yargs = require("yargs"); //Importar el modulo yargs
+#!/usr/bin/env node
 
-const clima = require()
+import { program } from "commander";
+import { parse } from 'json2csv';
+import axios from 'axios';
 
-const options = yargs
-    .usage(usage) //Metodo usage; se utiliza para personalizar el mensaje de ayuda que se muestra al usuario cuando escribe --help
-    .option("ciudad", {alias:"Nombre de ciudad", describe: "Introduce el nombre de la ciudad", type: "string", demandOption: true })
-    .option("pais", {alias:"Nombre de pais", describe: "Introduce el nombre del pais", type: "string", demandOption: true })
-    .option("format", {alias:"Formato de archivo", describe: "Introduce el tipo de formato: JSON, CSV o texto plano", type: "string", demandOption: true })
+program
+  .version("1.0.0")
+  .description("My Node CLI")
+  .option("-c, --ciudad <type>", "Introduce el nombre de la ciudad")
+  .option("-p, --pais <type>", "Introduce el nombre del pais")
+  .option("--formato <type>", "Introduce el tipo de formato: JSON, CSV o texto plano")
+  .action((options) => { // ---> Logica que se ejecuta cuando los parametros son llamados;
+    consultarAPI(options.ciudad, options.pais, options.formato)
+  });
 
-    .help(true) //Habilita la opcion --help
-    .argv; //yargs procesa los argumentos de la linea de comandos 
-
-
-const ciudad =  argv.ciudad;
-const pais =  argv.pais;
-
-function consultarAPI(ciudad,pais){
-    // key: 9cd3a9b4f8258188570da64348c66bfa
+function consultarAPI(ciudad,pais,formato){
     const appID= '9cd3a9b4f8258188570da64348c66bfa';
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appID}`;
-    // console.log(url); --> Imprimir la URL para verificar
 
-    fetch(url)
-        .then( resultado =>  resultado.json())
-        .then( datos => {
-            
-            if(datos.cod === '404'){
-                mostrarError('Ciudad no encontrada');
-                return
-            }
-    
-            mostrarClima(datos);
+    axios.get(url) // ---> Realiza la solicitud 
+        .then( response => {  
+            consultarFormato(formato, response.data) // Procesar la respuesta
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error.message); // Manejar errores
         });
 }
 
-// OJO!! AVERIGUAR EN COMO TOMAR LOS ARGUMENTOS DE CIUDAD Y PAIS, FUERA O DENTRO DE LA FUNCION
-
-
-function mostrarClima(datos){
+function consultarFormato(formato, jsonData){
+    switch (formato) {
+        case 'JSON':
+            console.log(jsonData)
+        break;
+        case 'CSV':
+            try{
+                // Convertir JSON a CSV
+                const csv = parse(jsonData);
+                console.log(csv);
+            } 
+            catch(error) {
+                console.error('Error fetching or converting data:', error);
+            }
+          break;
+        case 'texto plano':
+                console.log(JSON.stringify(jsonData, null, 2))
+          break;
+        default:
+          console.log('Opción no válida.');
+          break;
+    }
 }
 
-function consultarFormato(){    
-}
+program.parse(process.argv);
