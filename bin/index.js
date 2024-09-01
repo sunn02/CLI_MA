@@ -22,8 +22,14 @@ function consultarAPI(ciudad,pais,formato){
         .then( response => {  
             consultarFormato(formato, response.data) // Procesar la respuesta
         })
-        .catch(error => {
-            console.error('Error fetching data:', error.message); // Manejar errores
+        .catch(error => { // Manejar errores
+            console.error('Error fetching data:', error.message); 
+            
+            if (error.response) {
+              if (error.response.status === 404) {
+               console.error('Resource not found');
+              };
+            }
         });
 }
 
