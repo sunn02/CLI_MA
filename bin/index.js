@@ -15,7 +15,7 @@ program
   });
 
 function consultarAPI(ciudad,pais,formato){
-    const appID= '9cd3a9b4f8258188570da64348c66bfa';
+    const appID= '####';
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appID}`;
 
     axios.get(url) // ---> Realiza la solicitud 
